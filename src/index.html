@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SightX — Surveillance Command Center</title>
+    <meta name="description" content="SightX Live Surveillance Dashboard with AI Weapon Detection">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- Three.js Ambient Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Scanline Overlay -->
+    <div class="scanline-overlay"></div>
+
+    <div class="app-shell">
+        <!-- ═══════ TOP NAV ═══════ -->
+        <nav class="top-bar">
+            <div class="nav-left">
+                <div class="logo-group">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="14" stroke="#00FFCC" stroke-width="2" opacity="0.5"/>
+                            <circle cx="16" cy="16" r="8" stroke="#00FFCC" stroke-width="1.5"/>
+                            <circle cx="16" cy="16" r="3" fill="#00FFCC"/>
+                            <line x1="16" y1="0" x2="16" y2="6" stroke="#00FFCC" stroke-width="1.5"/>
+                            <line x1="16" y1="26" x2="16" y2="32" stroke="#00FFCC" stroke-width="1.5"/>
+                            <line x1="0" y1="16" x2="6" y2="16" stroke="#00FFCC" stroke-width="1.5"/>
+                            <line x1="26" y1="16" x2="32" y2="16" stroke="#00FFCC" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <h1 class="logo-text">SIGHT<span class="logo-highlight">X</span></h1>
+                    <span class="version-tag">v3.0</span>
+                </div>
+            </div>
+            <div class="nav-center">
+                <div id="alert-banner" class="alert-banner hidden">
+                    <div class="alert-icon-pulse"></div>
+                    <span>⚠ THREAT DETECTED — </span>
+                    <span id="threat-name" class="threat-label">KNIFE</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <a href="/" class="back-btn">← HOME</a>
+                <div class="live-badge"><span class="live-dot"></span><span>LIVE</span></div>
+                <div class="datetime-display">
+                    <span id="live-clock" class="clock-text">00:00:00</span>
+                    <span id="live-date" class="date-text">--</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ═══════ DASHBOARD GRID ═══════ -->
+        <main class="dashboard-grid">
+            <!-- LEFT -->
+            <aside class="sidebar-left">
+                <div class="card glass-card">
+                    <div class="card-header"><div class="card-icon">⚡</div><h3>SYSTEM VITALS</h3></div>
+                    <div class="vitals-grid">
+                        <div class="vital-item">
+                            <div class="vital-ring-container">
+                                <svg class="vital-ring" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle id="cpu-ring" class="ring-fill" cx="40" cy="40" r="34" style="stroke-dashoffset:213.63;"/></svg>
+                                <span id="cpu-value" class="vital-value">0%</span>
+                            </div>
+                            <span class="vital-label">CPU</span>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-ring-container">
+                                <svg class="vital-ring" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle id="ram-ring" class="ring-fill ring-purple" cx="40" cy="40" r="34" style="stroke-dashoffset:213.63;"/></svg>
+                                <span id="ram-value" class="vital-value">0%</span>
+                            </div>
+                            <span class="vital-label">RAM</span>
+                        </div>
+                    </div>
+                    <div class="fps-counter"><span class="fps-label">FRAME RATE</span><span id="fps-value" class="fps-number">0</span><span class="fps-unit">FPS</span></div>
+                </div>
+                <div class="card glass-card">
+                    <div class="card-header"><div class="card-icon">🎯</div><h3>ACTIVE TARGETS</h3></div>
+                    <div class="target-list">
+                        <div class="target-item danger"><div class="target-dot"></div><span>KNIFE</span><span class="target-badge">HIGH</span></div>
+                        <div class="target-item danger"><div class="target-dot"></div><span>WEAPON</span><span class="target-badge">HIGH</span></div>
+                        <div class="target-item critical"><div class="target-dot"></div><span>GUN</span><span class="target-badge crit">CRITICAL</span></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CENTER -->
+            <section class="video-center">
+                <div class="video-card glass-card">
+                    <div class="video-header">
+                        <div class="video-header-left"><div class="rec-indicator"><span class="rec-dot"></span> REC</div><span class="cam-label">CAMERA 01 — PRIMARY FEED</span></div>
+                        <div class="video-header-right"><span class="res-badge">HD</span></div>
+                    </div>
+                    <div class="video-viewport">
+                        <div class="corner-bracket top-left"></div><div class="corner-bracket top-right"></div>
+                        <div class="corner-bracket bottom-left"></div><div class="corner-bracket bottom-right"></div>
+                        <img id="video-feed" src="/video_feed" alt="Initializing Camera Feed...">
+                    </div>
+                    <div class="threat-meter-bar">
+                        <div class="meter-label"><span>THREAT LEVEL</span><span id="threat-percent" class="meter-value">0%</span></div>
+                        <div class="meter-track"><div id="threat-fill" class="meter-fill"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT -->
+            <aside class="sidebar-right">
+                <div class="card glass-card logs-card">
+                    <div class="card-header"><div class="card-icon">📋</div><h3>INCIDENT LOG</h3></div>
+                    <div class="logs-scroll" id="logs-scroll">
+                        <div id="logs-container" class="logs-container"><div class="empty-log">No incidents recorded</div></div>
+                    </div>
+                </div>
+                <div class="card glass-card">
+                    <div class="card-header"><div class="card-icon">🧠</div><h3>AI ENGINE</h3></div>
+                    <div class="model-info">
+                        <div class="info-row"><span class="info-key">Model</span><span class="info-val">YOLOv8s</span></div>
+                        <div class="info-row"><span class="info-key">Tracker</span><span class="info-val cyan">ByteTrack</span></div>
+                        <div class="info-row"><span class="info-key">Precision</span><span class="info-val">FP16 (AMP)</span></div>
+                        <div class="info-row"><span class="info-key">Confidence</span><span class="info-val cyan">≥ 20%</span></div>
+                        <div class="info-row"><span class="info-key">3D Engine</span><span class="info-val cyan">Three.js</span></div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- BOTTOM STATUS -->
+        <footer class="status-bar">
+            <div class="status-item"><span class="status-dot green"></span>AI Engine Online</div>
+            <div class="status-item"><span class="status-dot green"></span>Camera Connected</div>
+            <div class="status-item"><span class="status-dot green"></span>Email Alerts ON</div>
+            <div class="status-item"><span class="status-dot green"></span>3D Renderer Active</div>
+            <div class="status-item right-align">SIGHTX COMMAND CENTER v3.0 — ALL SYSTEMS NOMINAL</div>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+
+    <!-- ══════ Three.js Dashboard Background ══════ -->
+    <script>
+    (function() {
+        const c = document.getElementById('bg-canvas');
+        const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
+        r.setSize(innerWidth, innerHeight);
+        r.setPixelRatio(Math.min(devicePixelRatio, 2));
+        const s = new THREE.Scene();
+        s.fog = new THREE.FogExp2(0x020408, 0.002);
+        const cam = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
+        cam.position.set(0, 20, 80);
+
+        // Particles
+        const N = 600;
+        const g = new THREE.BufferGeometry();
+        const pos = new Float32Array(N*3);
+        for (let i=0;i<N;i++) { pos[i*3]=(Math.random()-0.5)*400; pos[i*3+1]=(Math.random()-0.5)*200; pos[i*3+2]=(Math.random()-0.5)*400; }
+        g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+        const pts = new THREE.Points(g, new THREE.PointsMaterial({ color:0x00FFCC, size:1.2, transparent:true, opacity:0.25, blending:THREE.AdditiveBlending }));
+        s.add(pts);
+
+        // Grid
+        const gh = new THREE.GridHelper(400,40,0x00FFCC,0x001a14);
+        gh.position.y = -25; gh.material.opacity=0.08; gh.material.transparent=true;
+        s.add(gh);
+
+        // Wireframe shapes
+        const shapes = [];
+        for (let i=0;i<4;i++) {
+            const m = new THREE.Mesh(new THREE.IcosahedronGeometry(Math.random()*5+3,1), new THREE.MeshBasicMaterial({color:0x00FFCC,wireframe:true,transparent:true,opacity:0.06}));
+            m.position.set((Math.random()-0.5)*200,(Math.random()-0.5)*60,(Math.random()-0.5)*200);
+            m.userData = { rs:(Math.random()-0.5)*0.005 };
+            s.add(m); shapes.push(m);
+        }
+
+        addEventListener('resize', ()=>{ cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); r.setSize(innerWidth,innerHeight); });
+
+        const clk = new THREE.Clock();
+        (function loop() {
+            requestAnimationFrame(loop);
+            const t = clk.getElapsedTime();
+            pts.rotation.y += 0.0002;
+            shapes.forEach(sh => { sh.rotation.x+=sh.userData.rs; sh.rotation.y+=sh.userData.rs*0.6; });
+            gh.material.opacity = 0.06 + Math.sin(t*0.4)*0.02;
+            cam.position.x = Math.sin(t*0.1)*15;
+            cam.lookAt(0,0,0);
+            r.render(s, cam);
+        })();
+    })();
+    </script>
+</body>
+</html>
